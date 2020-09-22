@@ -1,0 +1,305 @@
+import React, { useState } from 'react';
+import
+{
+    Typography,
+    TextField,
+    Box,
+    Button,
+    CssBaseline,
+    Grid,
+    Paper,
+    Dialog,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+    FormControlLabel,
+    Snackbar,
+    Switch,
+    Tooltip,
+} from '@material-ui/core';
+import MuiAlert from '@material-ui/lab/Alert';
+import { makeStyles } from '@material-ui/core/styles';
+import Home from '../components/Home';
+import background from '../images/background.jpg';
+import axios from 'axios';
+
+function Alert(props)
+{
+    return <MuiAlert elevation={6} variant="filled" {...props}/>;
+}
+
+// Displays current year and copyright info
+function Copyright()
+{
+    return (
+        <Typography color="textSecondary" align="center" variant="body2">
+          {'Copyright ⓒ '}
+          {new Date().getFullYear()}
+          {' Waldo Navas.'}
+	</Typography>  
+    );
+}
+const useStyles = makeStyles((theme)=> ({
+    root: {
+        //width: '100%',
+        height: '100vh',
+        overflow: 'hidden',
+        // '& > * + *': {
+        //     marginTop: theme.spacing(2),
+        // },
+    },
+    paper: {
+        margin: theme.spacing(8,4),
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+    },
+    image: {
+        backgroundImage: `url(${background})`,
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundColor: theme.palette.grey[900],
+    },
+    form: {
+        width: '100%',
+        marginTop: theme.spacing(1),
+    },
+    submit: {
+        margin: theme.spacing(3,0,2),
+    },
+}));
+
+export default function Login({idVar})
+{
+    const comps = useStyles();
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [regUser, setRegUser] = useState("");
+    const [regPass, setRegPass] = useState("");
+    const [regPass2, setRegPass2] = useState("");
+    const [regName, setRegName] = useState("");
+    const [regSurn, setRegSurn] = useState("");
+    const [regPriv, setRegPriv] = useState(false);
+    const [loginSnackbar, setLoginSnackbar] = useState(false);
+    const [registerErrSnackbar, setRegisterErrSnackbar] = useState(false);
+    const [registerSuccSnackbar, setRegisterSuccSnackbar] = useState(false);
+    const [showPopup, setShowPopup] = useState(false);
+    const PrivTooltip=`If checked, your account will not display your name, 
+and its stats won't be visible to other users for comparison and analysis. 
+Note that this -cannot- be changed once your account is created!`;
+    
+    const openLoginSnackbar = () => {
+        setLoginSnackbar(true);
+    };
+    const closeLoginSnackbar = (event,reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }        
+        setLoginSnackbar(false);
+    };
+    const openRegisterErrSnackbar = () => {
+        setRegisterErrSnackbar(true);
+    };
+    const closeRegisterErrSnackbar = (event,reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }        
+        setRegisterErrSnackbar(false);
+    };
+    const openRegisterSuccSnackbar = () => {
+        setRegisterSuccSnackbar(true);
+    };
+    const closeRegisterSuccSnackbar = (event,reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }        
+        setRegisterSuccSnackbar(false);
+    };
+    
+    const togglePriv= () => {
+        setRegPriv(!regPriv);
+    };
+    const openPopup = () => {
+        setShowPopup(true);
+    };
+    const closePopup = () => {
+        setShowPopup(false);
+        setRegUser("");
+        setRegPass("");
+        setRegPass2("");
+    };
+    function validateForm()
+    {
+        return( username.length > 0 && password.length > 0);
+    }
+
+    function validatePasswords()
+    {
+        return(regUser.length > 0 &&
+               regPass === regPass2
+               && regPass !== "" && regPass2 !== "");
+    }
+
+    //Login
+    function handleSubmit(event)
+    {
+        event.preventDefault();
+        axios.get('http://localhost:8080/login', {
+            params: {
+                username: `${username}`,
+                password: `${password}`    
+            }            
+        })
+            .then(response => {                
+                idVar(response.data);
+            })
+            .catch(error => {
+                if (error.response)
+                {
+                    //alert(error.response.data);
+                    openLoginSnackbar();
+                }                
+            });
+    }
+    function register(event)
+    {
+        //console.log(regUser, regPass, regSurn, regName, regPriv);
+        axios.post('http://localhost:8080/register', {}, {
+            params: {
+                username: `${regUser}`,
+                password: `${regPass}`,
+                last_name: `${regSurn}`,
+                first_name: `${regName}`,
+                is_private: `${regPriv}`,
+            }
+        })
+            .then(() => {
+                closePopup();
+                openRegisterSuccSnackbar();
+            })
+            .catch(error => {
+                //console.log(error);
+                openRegisterErrSnackbar();
+            });
+    }
+
+
+    return (
+        // Contains the css definitions above (components)
+        <div>
+          
+          <Grid container component="main" className={comps.root}>
+            <CssBaseline />
+            <Grid item xs={false} sm={4} md={7} className={comps.image} />
+            <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
+              <div className={comps.paper}>
+                <Home />
+                <form className={comps.form} noValidate onSubmit={handleSubmit}>                  
+                  <TextField variant="filled" margin="normal" required
+                             fullWidth id="username" label="Username" name="username"                             
+                             onChange={e => setUsername(e.target.value)}
+                             autoComplete="username" autoFocus/>
+                  <TextField variant="filled" margin="normal" required
+                             fullWidth name="password" label="Password" type="password"
+                             onChange={e => setPassword(e.target.value)}
+                             id="password" autoComplete="current-password"/>
+                  <Button type="submit" fullWidth variant="contained" disabled={!validateForm()}
+                          color="primary" classname={comps.submit}>Login</Button>
+                  <p/>
+                  <Button type="button" fullWidth variant="contained" onClick={openPopup}
+                          color="primary" classname={comps.submit}>Register</Button>
+                  <Box mt={5}><Copyright /></Box>
+                </form>
+              </div>
+            </Grid>            
+          </Grid>
+          {/*Register error snackbar*/}
+          <Snackbar
+            open={registerErrSnackbar}
+            autoHideDuration={6000}
+            onClose={closeRegisterErrSnackbar}>
+            <Alert onClose={closeRegisterErrSnackbar}severity="error">Username already exists! Please choose another username.</Alert>
+          </Snackbar>
+          {/*Register success snackbar*/}
+          <Snackbar
+            open={registerSuccSnackbar}
+            autoHideDuration={6000}
+            onClose={closeRegisterSuccSnackbar}>
+            <Alert onClose={closeRegisterSuccSnackbar}severity="success">User registered succesfully! You may now login using your new account credentials.</Alert>
+          </Snackbar>
+          
+          {/*login error snackbar*/}
+          <Snackbar
+            open={loginSnackbar}
+            autoHideDuration={6000}
+            onClose={closeLoginSnackbar}>
+            <Alert onClose={closeLoginSnackbar}severity="error">Incorrect username and/or password!</Alert>            
+          </Snackbar>
+
+          
+          {/*Registration Dialog*/}
+           <Dialog open={showPopup} >
+                <DialogTitle>Register New Account</DialogTitle>
+             <DialogContent>
+               <DialogContentText>
+                 Please enter your name and desired username and password to create your account. Please don't reuse any important credentials here, this isn't a bank, we store stuff in plaintext.
+               </DialogContentText>
+               <TextField
+                 autoFocus
+                 id="register-name"
+                 label="First Name (Optional)"
+                 onChange={e => setRegName(e.target.value)}
+                 fullWidth />
+               <TextField                 
+                 id="register-surname"
+                 label="Last Name (Optional)"
+                 onChange={e => setRegSurn(e.target.value)}
+                 fullWidth />
+               <TextField                 
+                 id="register-username"
+                 label="Username"
+                 required
+                 onChange={e => setRegUser(e.target.value)}
+                 fullWidth />
+               <TextField
+                 id="register-password"
+                 label="Password"
+                 type="password"
+                 required
+                 onChange={e => setRegPass(e.target.value)}
+                 fullWidth />
+               <TextField
+                 id="register-password2"
+                 label="Confirm Password"
+                 type="password"
+                 required
+                 onChange={e => setRegPass2(e.target.value)}
+                 fullWidth />
+               <Tooltip
+                 title={PrivTooltip}
+                 placement="right-start"
+                 arrow
+                 interactive
+               >
+                 <FormControlLabel
+                 control={
+                     
+                       <Switch
+                           name="checkPriv"
+                           color="primary"
+                         checked={regPriv}
+                           onChange={togglePriv}
+                         />
+                     
+                   }
+                 label="Private Account"
+               />
+               </Tooltip>
+             </DialogContent>
+             <Button type='button' onClick={register} disabled={!validatePasswords()}>Register</Button>
+             <Button onClick={closePopup}>Cancel</Button>
+           </Dialog>
+        </div>
+    );
+}

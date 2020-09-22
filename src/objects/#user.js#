@@ -1,0 +1,8 @@
+export function user(id, username, last_name, first_name, is_private)
+{
+    return [
+	{
+	    id: id
+	}
+    ];
+}

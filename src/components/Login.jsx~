@@ -1,0 +1,83 @@
+import React from 'react';
+import
+{
+    Typography,
+    TextField,
+    Box,
+    Button,
+    CssBaseline,
+    Grid,
+    Paper,
+} from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
+import Home from '../pages/Home';
+import background from '../images/background.jpg';
+
+// Displays current year and copyright info
+function Copyright()
+{
+    return (
+        <Typography color="textSecondary" align="center" variant="body2">
+          {'Copyright ⓒ '}
+          {new Date().getFullYear()}
+          {' Waldo Navas.'}
+	</Typography>  
+    );
+}
+const useStyles = makeStyles((theme) => ({
+    root: {
+        height: '100vh',        
+    },
+    paper: {
+        margin: theme.spacing(8,4),
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+    },
+    image: {
+        backgroundImage: `url(${background})`,
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundColor: theme.palette.grey[900],
+    },
+    form: {
+        width: '100%',
+        marginTop: theme.spacing(1),
+    },
+    submit: {
+        margin: theme.spacing(3,0,2),
+    },
+}));
+
+export default function LoginScreen()
+{
+    // Contains the css definitions above (components)
+    const comps = useStyles();
+    return(
+        <Grid container component="main" className={comps.root}>
+          <CssBaseline />
+          <Grid item xs={false} sm={4} md={7} className={comps.image} />
+          <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
+            <div className={comps.paper}>
+              <Home />
+
+              <form className={comps.form} noValidate>
+                <TextField variant="outlined" margin="normal" required
+                           fullWidth id="username" label="Username" name="username"
+                           autoComplete="username" autoFocus/>
+                <TextField variant="outlined" margin="normal" required
+                           fullWidth name="password" label="Password" type="password"
+                           id="password" autoComplete="current-password"/>
+                <Button type="submit" fullWidth variant="contained"
+                        color="primary" classname={comps.submit}>Login</Button>
+                <p/>
+                <Button type="submit" fullWidth variant="contained"
+                        color="primary" classname={comps.submit}>Register</Button>
+                <Box mt={5}><Copyright /></Box>
+              </form>
+            </div>
+          </Grid>
+        </Grid>
+    );
+};

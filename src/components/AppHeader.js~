@@ -1,0 +1,12 @@
+
+import React from 'react';
+import
+{
+    Appbar,
+    Toolbar,
+    Typography,
+} from '@material-ui/core';
+
+export default () => (
+    <Typography variant = "h4">Cube World</Typography>
+)

@@ -17,6 +17,7 @@
     "pretty-ms": "^7.0.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-keyboard-event-handler": "^1.5.4",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.3"
   },

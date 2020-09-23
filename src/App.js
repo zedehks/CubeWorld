@@ -8,7 +8,7 @@ export default function App() {
 
     function forceUpdate(json) {
 	//	alert(id);
-	console.log(json);
+//	console.log(json);
 	setUser(json);
 	
 //	alert(userId);
@@ -20,12 +20,6 @@ export default function App() {
 
     if(user !== '')
     {
-	/*return(
-	    <div>
-	      <h1>login niggers as {userId}</h1>
-              <button onClick={reset}>reset this shit</button>
-	    </div>
-	    );*/
 	return(
 	    <div>
 		<Main logout={reset} rec_user={user}/>
@@ -39,5 +33,6 @@ export default function App() {
 	    </div>
 	);	
     }
+    
     
 };

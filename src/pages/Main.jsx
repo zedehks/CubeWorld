@@ -30,6 +30,7 @@ import {makeStyles, useTheme} from '@material-ui/core/styles';
 
 import Timer from '../components/Timer';
 import Welcome from '../components/Welcome';
+import Sessions from '../components/Session';
 
 const drawerWidth = 240;
 
@@ -102,7 +103,7 @@ export default function Main({rec_user, logout})
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
     const [exitDialog, setExitDialog] = React.useState(false);
-    const statuses = ['idle', 'timer', 'stats'];
+    const statuses = ['idle', 'timer', 'stats', 'session'];
     const [status, setStatus] = React.useState('idle');
     //const user=JSON.parse(rec_user);
 
@@ -128,6 +129,8 @@ export default function Main({rec_user, logout})
             return <Welcome name={rec_user.first_name === null ? rec_user.username : rec_user.first_name}/>;
             case 'timer':
             return <Timer />;
+            case 'session':
+            return <Sessions user={rec_user} />;
             case 'stats':
             return (
                 <div>
@@ -154,6 +157,10 @@ export default function Main({rec_user, logout})
             return null;
         }
     }
+
+    function handleDrawerClick()
+    {}
+    
     return (
         <div className={comps.root}>
           <CssBaseline />
@@ -199,11 +206,11 @@ export default function Main({rec_user, logout})
             </div>
             <Divider />
             <List>
-              <ListItem button key="NewSessions" onClick={()=> {alert("niggers");} }>
+              <ListItem button key="Timer" onClick={()=> {setStatus(statuses[1]);}}>
                 <ListItemIcon>{findIcon(3)}</ListItemIcon>
-                <ListItemText primary='New Session' />
+                <ListItemText primary='Timer' />
               </ListItem>
-              <ListItem button key='Sessions' onClick={() =>{setStatus(statuses[1]);}}>
+              <ListItem button key='Sessions' onClick={() =>{setStatus(statuses[3]);}}>
                 <ListItemIcon>{findIcon(0)}</ListItemIcon>
                 <ListItemText primary='Sessions' />
               </ListItem>

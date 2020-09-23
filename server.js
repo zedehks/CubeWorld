@@ -34,6 +34,22 @@ app.get('/login', function (req, res, next) {
     
 });
 
+app.get('/sessions', function (req, res, next) {
+    console.dir (req.query);
+    sql.sessions(req.query.id_user).then(result => {
+	if(result.rowsAffected[0] === 0)
+	{
+	    res.status(404).send('No sessions found.');
+	}
+	else
+	{
+	    let queryResult = result.recordset[0];
+	    console.dir(queryResult);
+	    res.send(JSON.stringify(queryResult));
+	}
+    }).catch(next);    
+});
+
 app.post('/register', function (req, res) {
     console.dir(req.query)
     let user = req.query.username;
@@ -49,16 +65,54 @@ app.post('/register', function (req, res) {
 	}
 	else
 	{
-	    //let queryResult = result.;
-	    //console.log('sending: '+queryResult);
-	    res.send("User Created.");
-	    //console.log('sent: '+queryResult);	    
+	    res.send("User Created.");	    
 	}
 	
     }).catch(error=> {
 	console.log('Username already exists!');
 	res.status(409).send('conflict_username');
     });
+});
+
+app.post('/session', function (req, res) {
+    console.dir(req.query);
+    let user=req.query.user;
+    let puzzle=req.query.puzzle;
+    sql.session(user,puzzle).then(result => {
+	if(result.rowsAffected[0] === 0)
+	{
+	    console.log('Error creating Session!');
+	    res.status(500).send('conflict_session');
+	}
+	else
+	{
+	    res.send("Session Created.");	    
+	}
+    }).catch(error=> {
+	console.log('Error creating Session!');
+	res.status(500).send('conflict_session');
+    });
+});
+
+app.delete('/session', function (req, res,next ) {
+    console.dir(req.query);
+    let user=req.query.id_user;
+    let sess=req.query.id_session;
+    sql.delSession(user,sess).then(result => {
+	if(result.rowsAffected[0] === 0)
+	{
+	    console.log('Error deleting session!');
+	    res.status(404).send('session_not_found');
+	}
+	else
+	{
+	    res.send("Session deleted.");	    
+	}
+    }).catch(error=> {
+	console.log('Error deleting Session!');
+	res.status(404).send('session_not_found');
+    });
+    
 });
 
 app.get('/scramble', function (req, res) {

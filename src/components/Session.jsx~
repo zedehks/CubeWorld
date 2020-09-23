@@ -1,0 +1,138 @@
+import React, {useState} from 'react';
+import {makeStyles} from '@material-ui/core/styles';
+import
+{
+    CssBaseline,Fab,List,ListItem,ListItemText,ListItemSecondaryAction,
+    Container, Paper, Grid, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, IconButton, Button, Select, MenuItem
+}
+from '@material-ui/core';
+import AddIcon from '@material-ui/icons/Add';
+import DeleteIcon from '@material-ui/icons/Delete';
+import axios from 'axios';
+
+const useStyles = makeStyles((theme) => ({
+    root: {
+        flexGrow: 1,
+    },
+    paper: {
+        padding: "10px",
+        margin: "10px",
+        display: 'flex',
+        flexDirection: 'column',
+        textAlign: "center",
+        alignItems: 'center',
+        color: theme.palette.text.secondary,               
+    }
+}));
+
+class Session
+{
+    constructor(id,user,date,puzzle)
+    {
+        this.id_session = id;
+        this.id_user = user;
+        this.date_session = date;
+        this.puzzle_type = puzzle;
+    }
+}
+
+export default function Session({user})
+{
+    const comps = useStyles();
+    const [sessions, setSessions] = useState([]);
+    const [dialog, setDialog] = useState(false);
+    //defaults to 3x3 puzzle
+    const [scrambleType, setScrambleType] = useState(3);
+
+    const handleScramble = (e) => {
+        setScrambleType(e.target.value);
+    };
+
+    function getSessions()
+    {
+        axios.get('http://localhost:8080/sessions', {
+            params: {
+                user_id: `${user.id}`
+            }
+        }).then(response => {
+            console.log(response);
+        }).catch(error => {
+            console.log(error);
+        });
+    }
+
+    const items = sessions.map((session) =>
+        <ListItem>
+          <ListItemText>
+            {session.date_session} {session.puzzle_type}
+          </ListItemText>
+          <ListItemSecondaryAction>
+            <IconButton edge="end" onClick={()=>{
+                //lol
+            }}>
+              <DeleteIcon />
+            </IconButton>            
+          </ListItemSecondaryAction>
+        </ListItem>
+    );
+
+    const openDialog = () => {
+        setDialog(true);
+    };
+    const closeDialog= () => {
+        setDialog(false);
+    };
+
+    const newSession = () => {
+        openDialog();
+    };
+    
+    return(
+        <Container component="main" maxwidth="s">
+          <CssBaseline />
+          <Fab color="primary" onClick={newSession}>
+            <AddIcon />
+          </Fab>
+          <List>
+            {items}
+          </List>
+
+          {/*confirm exit dialog*/}
+          <Dialog
+            open={dialog}
+            onClose={closeDialog}
+          >
+            <DialogTitle>{"New Session"}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Select the puzzle type for this session:
+              </DialogContentText>
+              <Select
+                value={scrambleType}
+                onChange={handleScramble}
+              >
+                <MenuItem value={2}>2x2</MenuItem>
+                <MenuItem value={3}>3x3</MenuItem>
+                <MenuItem value={4}>4x4</MenuItem>
+                <MenuItem value={5}>5x5</MenuItem>
+                <MenuItem value={6}>6x6</MenuItem>
+                <MenuItem value={7}>7x7</MenuItem>
+              </Select>
+            </DialogContent>
+            <DialogActions>
+              <Button autoFocus onClick={closeDialog} color="secondary">
+                Cancel
+              </Button>
+              <Button onClick={()=>{
+                  //lel
+              }} color="primary">
+                Create
+              </Button>
+            </DialogActions>
+          </Dialog>
+          
+        </Container>
+    );
+}
+
+

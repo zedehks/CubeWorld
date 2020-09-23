@@ -34,6 +34,89 @@ app.get('/login', function (req, res, next) {
     
 });
 
+app.post('/solve', function (req, res) {
+    console.dir(req.query);
+    let user=req.query.user;
+    let session=req.query.session;
+    let time=req.query.time;
+    let penalty=req.query.penalty;
+    let scramble=req.query.scramble
+    sql.solve(user,session,time,penalty,scramble).then(result => {
+	if(result.rowsAffected[0] === 0)
+	{
+	    console.log('Error creating solve!');
+	    res.status(500).send('conflict_solve');
+	}
+	else
+	{
+	    res.send("Solve Created.");	    
+	}
+    }).catch(error=> {
+	console.log('Error creating solve!');
+	res.status(500).send('conflict_solve');
+    });
+});
+
+app.post('/penalty', function (req, res) {
+    console.dir(req.query);
+    let user=req.query.user;
+    let session=req.query.session;
+
+    let penalty=req.query.penalty
+    sql.setPenalty(user,session,penalty).then(result => {
+	if(result.rowsAffected[0] === 0)
+	{
+	    console.log('Error updating solve!');
+	    res.status(500).send('conflict_solve');
+	}
+	else
+	{
+	    res.send("Solve updated.");	    
+	}
+    }).catch(error=> {
+	console.log('Error updating solve!');
+	res.status(500).send('conflict_solve');
+    });
+});
+
+app.get('/solves,', function (req,res,next) {
+    console.dir(query);
+    sql.solves(req.query.session, req.query.user).then(result => {
+	if(result.rowsAffected[0] === 0)
+	{
+	    res.status(404).send('No solves found.');
+	}
+	else
+	{
+	    let queryResult = result.recordset[0];
+	    console.dir(queryResult);
+	    res.send(JSON.stringify(queryResult));
+	}
+    }).catch(next);
+});
+
+app.delete('/solve', function (req, res,next ) {
+    console.dir(req.query);
+    let user=req.query.id_user;
+    let sess=req.query.id_session;
+    let id=req.query.id_solve
+    sql.delSolve(user,sess,id).then(result => {
+	if(result.rowsAffected[0] === 0)
+	{
+	    console.log('Error deleting solve!');
+	    res.status(404).send('solve_not_found');
+	}
+	else
+	{
+	    res.send("Solve deleted.");	    
+	}
+    }).catch(error=> {
+	console.log('Error deleting solve!');
+	res.status(404).send('solve_not_found');
+    });
+    
+});
+
 app.get('/sessions', function (req, res, next) {
     console.dir (req.query);
     sql.sessions(req.query.id_user).then(result => {
@@ -48,6 +131,22 @@ app.get('/sessions', function (req, res, next) {
 	    res.send(JSON.stringify(queryResult));
 	}
     }).catch(next);    
+});
+
+app.get('/lastsession', function (req, res, next) {
+    console.dir(req.query);
+    sql.lastSession(req.query.id_user).then(result => {
+	if(result.rowsAffected[0] === 0)
+	{
+	    res.status(404).send('No session found.');
+	}
+	else
+	{
+	    let queryResult = result.recordset[0];
+	    console.dir(queryResult);
+	    res.send(JSON.stringify(queryResult));
+	}
+    }).catch(next); 
 });
 
 app.post('/register', function (req, res) {

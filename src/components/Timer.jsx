@@ -13,6 +13,8 @@ import ms from 'pretty-ms';
 import {makeStyles} from '@material-ui/core/styles';
 import axios from 'axios';
 
+import Session from '../Session.js';
+
 function Alert(props)
 {
     return <MuiAlert elevation={6} variant="filled" {...props}/>;
@@ -54,7 +56,7 @@ class Clock extends React.Component
             time: 0,
             start: 0,
             isOn: false,
-            penalty: null,
+            penalty: 'none',
             unsavedSolve: false,            
         };
         this.startTimer = this.startTimer.bind(this);
@@ -89,6 +91,7 @@ class Clock extends React.Component
     setPenalty = (event) =>
     {
         this.setState({penalty: event.target.value});
+        this.props.setPenalty(this.state.penalty);
     }
 
     toggleTimer()
@@ -97,18 +100,19 @@ class Clock extends React.Component
         {
             this.stopTimer();
             this.setState({unsavedSolve: true});
+            this.props.createSolve(this.state.time, this.state.penalty,this.props.scramble);
             this.props.getScramble();
         }
         else
         {
             if (this.state.unsavedSolve)
             {
-                if(this.state.penalty === null)
-                {
-                    this.props.openSnackbar();
-                    return;
-                }
-                this.props.addSolve(this.state.time, this.state.penalty);
+                // if(this.state.penalty === null)
+                // {
+                //     this.props.openSnackbar();
+                //     return;
+                // }
+                //this.props.createSolve(this.state.time, this.state.penalty);
                 
             }            
             this.resetTimer();            
@@ -172,7 +176,7 @@ class Solve
 
 
 
-export default function Timer()
+export default function Timer({session})
 {
     const comps = useStyles();
     const [currScramble, setCurrScramble] = useState('');
@@ -185,6 +189,7 @@ export default function Timer()
     
     useEffect(() => {
         getScramble();
+        getSolves();
     }, []);
 
     const delDialogOpen = () => {
@@ -195,19 +200,73 @@ export default function Timer()
         setDoDel(null);
     };
 
-    function addSolve(time, penalty)
+    //adds solve to local array
+    function addSolve(id,time, penalty,scramble)
     {
-        let newSolve= new Solve(lastSolveId,time, penalty);
-        let newId = lastSolveId +1;
-        setLastSolveId(newId);
-        setSolves(solves=>[...solves,newSolve]);
+         let newSolve= new Solve(id,time, penalty,scramble);
+         setLastSolveId(id);
+         setSolves(solves=>[...solves,newSolve]);
+    }
+    //saves solve to db
+    function createSolve(time,penalty,scramble)
+    {
+        console.dir(session);
+        axios.post('http://localhost:8080/solve', {}, {
+            params: {
+                user: `${session.id_user}`,
+                session: `${session.id_session}`,
+                time: `${time}`,
+                scramble: `${scramble}`,
+                penalty: `${penalty}`,
+            }
+        }).then((response) => {
+            let data = response.data;
+            getSolves();
+        })
+            .catch(error => {
+                console.log(error); 
+            });
+    }
+    function setPenalty(penalty)
+    {
+        axios.post('http://localhost:8080/penalty', {}, {
+            params: {
+                user: `${session.id_user}`,
+                session: `${session.id_session}`,                
+                penalty: `${penalty}`,
+            }
+        }).then((response) => {
+            let data = response.data;
+            getSolves();
+        })
+            .catch(error => {
+                console.log(error); 
+            });
+    }
+
+    function getSolves()
+    {
+        setSolves([]);
+        axios.get('http://localhost:8080/solves', {
+            params: {
+                session: `${session.id_session}`,
+                user: `${session.id_user}`,
+            }
+        }).then(response => {
+            console.log(response.data);
+            let data=response.data;
+            response.data.forEach(data =>
+                addSolve(data.id_solve,data.solve_time,data.penalty,data.scramble));
+            
+        }).catch(error => {
+            console.log(error);
+        });
     }
     
     function getScramble()
     {
         axios.get('http://localhost:8080/scramble')
             .then(response => {
-                //console.log(response.data[0]);
                 setLastScramble(currScramble);                
                 setCurrScramble(response.data[0]);
                 console.log('cur '+currScramble);
@@ -231,12 +290,26 @@ export default function Timer()
 
     function delItem()
     {
-        let id = doDel;
-        const newList = solves.filter((item)=>
-            item.id !== id);
-        setSolves(newList);
-        delDialogClose();
-        setDoDel(null);
+        // let id = doDel;
+        // const newList = solves.filter((item)=>
+        //     item.id !== id);
+        // setSolves(newList);
+        // delDialogClose();
+        // setDoDel(null);
+
+        axios.delete("http://localhost:8080/solve", {
+            params: {
+                id_user: `${session.id_user}`,
+                id: `${doDel}`,
+                id_session: `${session.id_session}`,     
+            }
+        }).then(() => {
+            delDialogClose();
+            getSolves();
+        })
+            .catch(error => {
+                console.log(error); 
+            });
     }
     const items = solves.map((solve) =>
         <ListItem>
@@ -291,7 +364,7 @@ export default function Timer()
               <h3>Current Scramble:</h3>
               <h2>{currScramble}</h2>
             </Paper>
-            <Clock getScramble={getScramble} addSolve={addSolve} openSnackbar={openSnackbar}/>
+            <Clock scramble={currScramble} getScramble={getScramble} createSolve={createSolve} openSnackbar={openSnackbar} setPenalty={setPenalty}/>
             <div>Solves in this session:</div>
             <List  className={comps.list} >{items}</List>
           </div>

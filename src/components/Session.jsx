@@ -9,7 +9,7 @@ from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import axios from 'axios';
-
+import Session from '../Session.js';
 const useStyles = makeStyles((theme) => ({
     paper: {
         marginTop: theme.spacing(4),
@@ -26,18 +26,9 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-class Session
-{
-    constructor(id,user,date,puzzle)
-    {
-        this.id_session = id;
-        this.id_user = user;
-        this.date_session = date;
-        this.puzzle_type = puzzle;
-    }
-}
 
-export default function Sessions({user})
+
+export default function Sessions({user, startTimer,session})
 {
     const comps = useStyles();
     const [sessions, setSessions] = useState([]);
@@ -89,13 +80,31 @@ export default function Sessions({user})
                 user: `${user.id_user}`,
                 puzzle: `${scrambleType}`,
             }
-        }).then(() => {
-            closeDialog();
-            getSessions();
+        }).then((response) => {
+            let data = response.data;
+            let sess = new Session(data.id_session, user,data.date_session,data.puzzle_type);
+            session(sess);
+            startTimer();
         })
             .catch(error => {
                 console.log(error); 
             });
+    }
+
+    function getLatestSession()
+    {
+        axios.get('http://localhost:8080/lastsession', {
+            params: {
+                id_user: `${user.id_user}`
+            }
+        }).then(response => {
+            console.log(response.data);
+            response.data.forEach(data =>
+                addSession(data.id_session,data.date_session,data.puzzle_type));
+            
+        }).catch(error => {
+            console.log(error);
+        });
     }
 
     const items = sessions.map((session) =>

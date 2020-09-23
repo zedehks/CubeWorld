@@ -28,6 +28,7 @@ import TimelineIcon from  '@material-ui/icons/Timeline';
 import AddAlarmIcon from '@material-ui/icons/AddAlarm';
 import {makeStyles, useTheme} from '@material-ui/core/styles';
 
+import Session from '../Session.js';
 import Timer from '../components/Timer';
 import Welcome from '../components/Welcome';
 import Sessions from '../components/Session';
@@ -105,6 +106,7 @@ export default function Main({rec_user, logout})
     const [exitDialog, setExitDialog] = React.useState(false);
     const statuses = ['idle', 'timer', 'stats', 'session'];
     const [status, setStatus] = React.useState('idle');
+    const [session,setSession]= React.useState(null);
     //const user=JSON.parse(rec_user);
 
     const exitDialogOpen = () => {
@@ -128,9 +130,10 @@ export default function Main({rec_user, logout})
             case 'idle':
             return <Welcome name={rec_user.first_name === null ? rec_user.username : rec_user.first_name}/>;
             case 'timer':
-            return <Timer />;
+            if(session !== null)
+                return <Timer session={session}/>;
             case 'session':
-            return <Sessions user={rec_user} />;
+            return <Sessions user={rec_user} startTimer={() =>setStatus(statuses[1])} session={setSession}/>;
             case 'stats':
             return (
                 <div>

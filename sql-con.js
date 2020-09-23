@@ -148,7 +148,121 @@ module.exports = {
 	    });
 	});
 	
-    }
+    },
+    lastSession: function(user_id)    
+    {
+	sql.on('error', err => {
+	    console.log('SQL Error: '+err);
+	});
+	return new Promise((resolve, reject) => {
+	    sql.connect(config).then(pool => {
+		const query=`select top 1 id_session, date_session, puzzle_type from session where id_user=@user_id order by id_session
+                             for json auto, include_null_values;`;
+		return pool.request()
+		    .input('user_id',sql.Int, user_id)
+		    .query(query);
+	    }).then(result => {
+		console.log(result);
+		resolve(result);
+	    }).catch(err => {
+		console.log('Query error: '+err);
+		reject(err);
+	    });
+	});
+	
+    },
+    solves: function(session,user)
+    {
+	sql.on('error', err => {
+	    console.log('SQL Error: '+err);
+	});
+	return new Promise((resolve, reject) => {
+	    sql.connect(config).then(pool => {
+		const query=`select id_solve, solve_time, penalty, scramble from solve where id_user=@user_id and id_session=@id_session;
+                             for json auto, include_null_values;`;
+		return pool.request()
+		    .input('user_id',sql.Int, user_id)
+		    .input('id_session',sql.Int, session)
+		    .query(query);
+	    }).then(result => {
+		console.log(result);
+		resolve(result);
+	    }).catch(err => {
+		console.log('Query error: '+err);
+		reject(err);
+	    });
+	});
+    },
+    solve: function(user,session,time,penalty,scramble)
+    {
+	sql.on('error', err => {
+	    console.log('SQL Error: '+err);
+	});
+	return new Promise((resolve, reject) => {
+	    sql.connect(config).then(pool => {
+		const query=`insert into solve(id_session,id_user,solve_time,penalty,scramble)
+                             values(@session,@user,@time,@penalty,@scramble);`;
+		return pool.request()
+		    .input('user',sql.Int, user)
+		    .input('session',sql.Int, session)
+		    .input('time',sql.Int,time)
+		    .input('penalty',sql.VarChar,penalty)
+		    .input('scramble',sql.VarChar,scramble)
+		    .query(query);
+	    }).then(result => {
+		console.log(result);
+		resolve(result);
+	    }).catch(err => {
+		console.log('Query error: '+err);
+		reject(err);
+	    });
+	});
+    },
+    delSolve: function(user,session,id)
+    {
+	sql.on('error', err => {
+	    console.log('SQL Error: '+err);
+	});
+	return new Promise((resolve, reject) => {
+	    sql.connect(config).then(pool => {
+		const query=`delete from solve where id_user=@user and id_session=@session and id_solve=@solve;`;
+		return pool.request()
+		    .input('user',sql.Int, user)
+		    .input('session',sql.Int, session)
+		    .input('solve',sql.Int, id)
+		    .query(query);
+	    }).then(result => {
+		console.log(result);
+		resolve(result);
+	    }).catch(err => {
+		console.log('Query error: '+err);
+		reject(err);
+	    });
+	});
+    },
+    setPenalty: function(user,session,penalty)
+    {
+	sql.on('error', err => {
+	    console.log('SQL Error: '+err);
+	});
+	return new Promise((resolve, reject) => {
+	    sql.connect(config).then(pool => {
+		const query=`update solve set penalty=@penalty where id_solve=(
+select top 1 id_solve from solve where id_user=@user and id_session=@session order by id_solve);`;
+		return pool.request()
+		    .input('user',sql.Int, user)
+		    .input('session',sql.Int, session)
+		    .input('penalty',sql.VarChar,penalty)
+		    .query(query);
+	    }).then(result => {
+		console.log(result);
+		resolve(result);
+	    }).catch(err => {
+		console.log('Query error: '+err);
+		reject(err);
+	    });
+	});
+    },
 }
 
 

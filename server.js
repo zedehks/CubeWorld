@@ -79,8 +79,9 @@ app.post('/penalty', function (req, res) {
     });
 });
 
-app.get('/solves,', function (req,res,next) {
-    console.dir(query);
+app.get('/solves', function (req,res,next) {
+    console.log('get solves for params')
+    console.dir(req.query);
     sql.solves(req.query.session, req.query.user).then(result => {
 	if(result.rowsAffected[0] === 0)
 	{
@@ -99,9 +100,11 @@ app.delete('/solve', function (req, res,next ) {
     console.dir(req.query);
     let user=req.query.id_user;
     let sess=req.query.id_session;
-    let id=req.query.id_solve
+    let id=req.query.id_solve;
     sql.delSolve(user,sess,id).then(result => {
-	if(result.rowsAffected[0] === 0)
+	console.log('==result==');
+	console.dir(result)
+	if(result.rowsAffected === [0,1])
 	{
 	    console.log('Error deleting solve!');
 	    res.status(404).send('solve_not_found');
@@ -142,6 +145,7 @@ app.get('/lastsession', function (req, res, next) {
 	}
 	else
 	{
+	    console.log('last session:')
 	    let queryResult = result.recordset[0];
 	    console.dir(queryResult);
 	    res.send(JSON.stringify(queryResult));
@@ -215,8 +219,10 @@ app.delete('/session', function (req, res,next ) {
 });
 
 app.get('/scramble', function (req, res) {
-    console.log('Get cube scramble');
-    let scramble = Scramble.get(1);
+    let i = req.query.cube;
+    console.log('Get cube scramble for type: ' +i);
+    let j = `${i.repeat(3)}`;
+    let scramble = Scramble.type(j).get();
     res.send(scramble);  
 });
 

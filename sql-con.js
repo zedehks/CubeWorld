@@ -113,7 +113,7 @@ module.exports = {
 	});
 	return new Promise((resolve, reject) => {
 	    sql.connect(config).then(pool => {
-		const query=`delete from session where id_user=@user and id_session=@session;`;
+		const query=`delete from solve where id_session=@session and id_user=@user; delete from session where id_user=@user and id_session=@session;`;
 		return pool.request()
 		    .input('user',sql.Int, user)
 		    .input('session',sql.Int, session)
@@ -134,7 +134,7 @@ module.exports = {
 	});
 	return new Promise((resolve, reject) => {
 	    sql.connect(config).then(pool => {
-		const query=`select id_session, date_session, puzzle_type from session where id_user=@user_id
+		const query=`select id_session, date_session, puzzle_type from session where id_user=@user_id order by id_session desc
                              for json auto, include_null_values;`;
 		return pool.request()
 		    .input('user_id',sql.Int, user_id)
@@ -156,7 +156,7 @@ module.exports = {
 	});
 	return new Promise((resolve, reject) => {
 	    sql.connect(config).then(pool => {
-		const query=`select top 1 id_session, date_session, puzzle_type from session where id_user=@user_id order by id_session
+		const query=`select top 1 id_session, id_user, date_session, puzzle_type from session where id_user=@user_id order by id_session desc 
                              for json auto, include_null_values;`;
 		return pool.request()
 		    .input('user_id',sql.Int, user_id)
@@ -178,10 +178,10 @@ module.exports = {
 	});
 	return new Promise((resolve, reject) => {
 	    sql.connect(config).then(pool => {
-		const query=`select id_solve, solve_time, penalty, scramble from solve where id_user=@user_id and id_session=@id_session;
+		const query=`select id_solve, solve_time, penalty, scramble from solve where id_user=@id_user and id_session=@id_session order by id_solve desc
                              for json auto, include_null_values;`;
 		return pool.request()
-		    .input('user_id',sql.Int, user_id)
+		    .input('id_user',sql.Int, user)
 		    .input('id_session',sql.Int, session)
 		    .query(query);
 	    }).then(result => {
@@ -225,7 +225,7 @@ module.exports = {
 	});
 	return new Promise((resolve, reject) => {
 	    sql.connect(config).then(pool => {
-		const query=`delete from solve where id_user=@user and id_session=@session and id_solve=@solve;`;
+		const query=`delete from solve where id_session=@session and id_user=@user and id_solve=@solve;`;
 		return pool.request()
 		    .input('user',sql.Int, user)
 		    .input('session',sql.Int, session)
@@ -248,7 +248,7 @@ module.exports = {
 	return new Promise((resolve, reject) => {
 	    sql.connect(config).then(pool => {
 		const query=`update solve set penalty=@penalty where id_solve=(
-select top 1 id_solve from solve where id_user=@user and id_session=@session order by id_solve);`;
+select top 1 id_solve from solve where id_user=@user and id_session=@session order by id_solve desc);`;
 		return pool.request()
 		    .input('user',sql.Int, user)
 		    .input('session',sql.Int, session)

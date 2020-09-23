@@ -91,7 +91,7 @@ class Clock extends React.Component
     setPenalty = (event) =>
     {
         this.setState({penalty: event.target.value});
-        this.props.setPenalty(this.state.penalty);
+        this.props.setPenalty(event.target.value);
     }
 
     toggleTimer()
@@ -116,7 +116,7 @@ class Clock extends React.Component
                 
             }            
             this.resetTimer();            
-            this.setState({penalty: null, unsavedSolve: false}); 
+            this.setState({unsavedSolve: false, penalty: 'none'}); 
             this.startTimer();
         }
     }
@@ -247,6 +247,8 @@ export default function Timer({session})
     function getSolves()
     {
         setSolves([]);
+        console.log('current session: ');
+        console.dir(session);
         axios.get('http://localhost:8080/solves', {
             params: {
                 session: `${session.id_session}`,
@@ -265,7 +267,11 @@ export default function Timer({session})
     
     function getScramble()
     {
-        axios.get('http://localhost:8080/scramble')
+        axios.get('http://localhost:8080/scramble', {
+            params: {
+                cube: `${session.puzzle_type}`,
+            }
+        })
             .then(response => {
                 setLastScramble(currScramble);                
                 setCurrScramble(response.data[0]);
@@ -300,7 +306,7 @@ export default function Timer({session})
         axios.delete("http://localhost:8080/solve", {
             params: {
                 id_user: `${session.id_user}`,
-                id: `${doDel}`,
+                id_solve: `${doDel}`,
                 id_session: `${session.id_session}`,     
             }
         }).then(() => {

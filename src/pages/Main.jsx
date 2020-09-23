@@ -104,16 +104,25 @@ export default function Main({rec_user, logout})
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
     const [exitDialog, setExitDialog] = React.useState(false);
+    const [timerDialog, setTimerDialog] = React.useState(false);
     const statuses = ['idle', 'timer', 'stats', 'session'];
     const [status, setStatus] = React.useState('idle');
     const [session,setSession]= React.useState(null);
-    //const user=JSON.parse(rec_user);
+    const [wantScreen, setWantScreen] = React.useState(null);
 
     const exitDialogOpen = () => {
         setExitDialog(true);        
     };
     const exitDialogClose = () => {
         setExitDialog(false);        
+    };
+
+     const timerDialogOpen = () => {
+        setTimerDialog(true);        
+    };
+    const timerDialogClose = () => {
+        setTimerDialog(false);
+        //setStatus('idle');
     };
 
     const handleDrawerOpen = () => {
@@ -123,6 +132,11 @@ export default function Main({rec_user, logout})
         setOpen(false);        
     };
 
+    const setTimerSession = (session) => {
+        console.log('session to set'+session);
+        setSession(session);
+    };
+
     function drawApp()
     {
         switch(status)
@@ -130,10 +144,11 @@ export default function Main({rec_user, logout})
             case 'idle':
             return <Welcome name={rec_user.first_name === null ? rec_user.username : rec_user.first_name}/>;
             case 'timer':
+            
             if(session !== null)
                 return <Timer session={session}/>;
             case 'session':
-            return <Sessions user={rec_user} startTimer={() =>setStatus(statuses[1])} session={setSession}/>;
+            return <Sessions user={rec_user} startTimer={() =>setStatus(statuses[1])} session={setTimerSession}/>;
             case 'stats':
             return (
                 <div>
@@ -161,8 +176,25 @@ export default function Main({rec_user, logout})
         }
     }
 
-    function handleDrawerClick()
-    {}
+    function handleDrawerClick(e)
+    {
+        console.log(status);
+        if(status==='timer')
+        {
+            timerDialogOpen();
+            setWantScreen(e);
+        }
+        else
+        {
+            setStatus(e);            
+        }
+    }
+    function changeScreen()
+    {
+        setStatus(wantScreen);
+        setWantScreen(null);
+        timerDialogClose();
+    }
     
     return (
         <div className={comps.root}>
@@ -209,15 +241,15 @@ export default function Main({rec_user, logout})
             </div>
             <Divider />
             <List>
-              <ListItem button key="Timer" onClick={()=> {setStatus(statuses[1]);}}>
+              {/*<ListItem button key="Timer" onClick={()=> {setStatus(statuses[1]);}}>
                 <ListItemIcon>{findIcon(3)}</ListItemIcon>
                 <ListItemText primary='Timer' />
-              </ListItem>
-              <ListItem button key='Sessions' onClick={() =>{setStatus(statuses[3]);}}>
+                </ListItem>*/}
+              <ListItem button key='Sessions' onClick={() =>{handleDrawerClick(statuses[3]);}}>
                 <ListItemIcon>{findIcon(0)}</ListItemIcon>
                 <ListItemText primary='Sessions' />
               </ListItem>
-              <ListItem button key='Statistics' onClick={() => {setStatus(statuses[2]);}}>
+              <ListItem button key='Statistics' onClick={() => {handleDrawerClick(statuses[2]);}}>
                 <ListItemIcon>{findIcon(1)}</ListItemIcon>
                 <ListItemText primary='Statistics' />
               </ListItem>
@@ -252,6 +284,30 @@ export default function Main({rec_user, logout})
               </Button>
             </DialogActions>
           </Dialog>
+
+          {/*confirm exit timer dialog*/}
+          <Dialog
+            open={timerDialog}
+            onClose={timerDialogClose}
+          >
+            <DialogTitle>{"Close session?"}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                If you tab out of the session, it will close and you will not be able to open it again. Are you sure you want to save and close your session?
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button autoFocus onClick={timerDialogClose} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={changeScreen} color="primary">
+                Close Session
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+
+          
         </div>  
     );
 }

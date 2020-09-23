@@ -32,6 +32,7 @@ export default function Sessions({user, startTimer,session})
 {
     const comps = useStyles();
     const [sessions, setSessions] = useState([]);
+    const [curSess, setCurSess] = useState(null);
     const [dialog, setDialog] = useState(false);
     //defaults to 3x3 puzzle
     const [scrambleType, setScrambleType] = useState(3);
@@ -73,38 +74,44 @@ export default function Sessions({user, startTimer,session})
         });
     }
 
-    function createSession()
+    async function createSession()
     {
-        axios.post('http://localhost:8080/session', {}, {
+        await axios.post('http://localhost:8080/session', {}, {
             params: {
                 user: `${user.id_user}`,
                 puzzle: `${scrambleType}`,
             }
         }).then((response) => {
-            let data = response.data;
-            let sess = new Session(data.id_session, user,data.date_session,data.puzzle_type);
-            session(sess);
-            startTimer();
+            console.log(response);
+            
         })
-            .catch(error => {
-                console.log(error); 
-            });
+              .catch(error => {
+                  console.log(error);
+                  return 'nullval';
+              });
+        const data = await getLatestSession();
+       // console.log('latest session from db getLatest: ');
+        //console.dir(data);
+        setCurSess(data);
+        session(data);
+        startTimer();
     }
 
-    function getLatestSession()
+    async function getLatestSession()
     {
-        axios.get('http://localhost:8080/lastsession', {
+        const retval = await axios.get('http://localhost:8080/lastsession', {
             params: {
                 id_user: `${user.id_user}`
             }
         }).then(response => {
-            console.log(response.data);
-            response.data.forEach(data =>
-                addSession(data.id_session,data.date_session,data.puzzle_type));
-            
+            //console.log('last session from db:');
+            //console.dir(response.data);
+            return response.data[0];
         }).catch(error => {
             console.log(error);
+            return null;
         });
+        return retval;
     }
 
     const items = sessions.map((session) =>
@@ -128,7 +135,7 @@ export default function Sessions({user, startTimer,session})
         setDoDel(e);
         delDialogOpen();
     }
-    function delItem()
+    async function delItem()
     {
         axios.delete("http://localhost:8080/session", {
             params: {
@@ -136,12 +143,30 @@ export default function Sessions({user, startTimer,session})
                 id_session: `${doDel}`,
             }
         }).then(() => {
-            delDialogClose();
-            getSessions();
+            //console.log('currses:' +curSess.id_session+" doDel: "+doDel);
+            if(doDel === curSess.id_session)
+            {
+                session(null);
+            }
+            
+           
         })
             .catch(error => {
                 console.log(error); 
             });
+        //console.log('currses:' +curSess.id_session+" doDel: "+doDel);
+            // if(doDel === curSess.id_session)
+            // {
+            //     session(null);
+            // }
+        delDialogClose();
+        return "ok";
+            
+    }
+    async function getsess()
+    {
+        await delItem();
+        getSessions();
     }
     
     const openDialog = () => {
@@ -221,9 +246,9 @@ export default function Sessions({user, startTimer,session})
               <Button autoFocus onClick={delDialogClose} color="secondary">
                 Cancel
               </Button>
-              <Button onClick={()=>{
-                  delItem();
-              }} color="primary">
+              <Button onClick={
+                  getsess
+              } color="primary">
                 Delete
               </Button>
             </DialogActions>

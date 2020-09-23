@@ -226,6 +226,69 @@ app.get('/scramble', function (req, res) {
     res.send(scramble);  
 });
 
+app.get('/besttime', function (req,res) {
+    console.dir(req.query);
+      let user = req.query.id_user;
+    sql.bestTime(user).then(result => {
+	if(result.rowsAffected[0] === 0)
+	{
+	    console.log('Error finding solves!');
+	    res.status(404).send('solves_not_found');
+	}
+	else
+	{
+	    let queryResult = result.recordset[0];
+	    console.dir(queryResult);
+	    res.send(JSON.stringify(queryResult));
+	}
+    }).catch(error=> {
+	console.log('Error finding solves!');
+	res.status(404).send('solves_not_found');
+    });
+});
+app.get('/worsttime', function (req,res) {
+    console.dir(req.query);
+    let user = req.query.id_user;
+     sql.worstTime(user).then(result => {
+	if(result.rowsAffected[0] === 0)
+	{
+	    console.log('Error finding solves!');
+	    res.status(404).send('solves_not_found');
+	}
+	else
+	{
+	    let queryResult = result.recordset[0];
+	    console.dir(queryResult);
+	    res.send(JSON.stringify(queryResult));
+	}
+    }).catch(error=> {
+	console.log('Error finding solves!');
+	res.status(404).send('solves_not_found');
+    });
+});
+
+app.get('/avgtime', function (req,res) {
+    console.dir(req.query);
+    let user = req.query.id_user;
+     sql.avgTime(user).then(result => {
+	if(result.rowsAffected[0] === 0)
+	{
+	    console.log('Error finding solves!');
+	    res.status(404).send('solves_not_found');
+	}
+	else
+	{
+	    let queryResult = result.recordset[0];
+	    console.dir(queryResult);
+	    res.send(JSON.stringify(queryResult));
+	}
+    }).catch(error=> {
+	console.log('Error finding solves!');
+	res.status(404).send('solves_not_found');
+    });
+});
+
+
 console.log('Server running on port 8080');
 app.listen(process.env.PORT || 8080);
 

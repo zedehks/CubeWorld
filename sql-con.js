@@ -263,6 +263,83 @@ select top 1 id_solve from solve where id_user=@user and id_session=@session ord
 	    });
 	});
     },
+    //stat funcs
+    bestTime: function(id_user)
+    {
+	sql.on('error', err => {
+	    console.log('SQL Error: '+err);
+	});
+	return new Promise((resolve, reject) => {
+	    sql.connect(config).then(pool => {
+		const query=`select top 1 solve_time from 
+(select case penalty when 'plustwo' then (2000+solve_time) else solve_time end as solve_time 
+from solve where id_user=@user and not penalty='dnf') t
+order by solve_time asc;`;
+		return pool.request()
+		    .input('user',sql.Int, id_user)
+		    .query(query);
+	    }).then(result => {
+		console.log(result);
+		resolve(result);
+	    }).catch(err => {
+		console.log('Query error: '+err);
+		reject(err);
+	    });
+	});
+    },
+
+    worstTime: function(id_user)
+    {
+	sql.on('error', err => {
+	    console.log('SQL Error: '+err);
+	});
+	return new Promise((resolve, reject) => {
+	    sql.connect(config).then(pool => {
+		const query=`
+select top 1 solve_time from 
+(select case penalty when 'plustwo' then (2000+solve_time) else solve_time end as solve_time
+from solve where id_user=@user and not penalty='dnf') t
+order by solve_time desc;`;
+		return pool.request()
+		    .input('user',sql.Int, id_user)
+		    .query(query);
+	    }).then(result => {
+		console.log(result);
+		resolve(result);
+	    }).catch(err => {
+		console.log('Query error: '+err);
+		reject(err);
+	    });
+	});
+    },
+    avgTime: function(id_user)
+    {
+	sql.on('error', err => {
+	    console.log('SQL Error: '+err);
+	});
+	return new Promise((resolve, reject) => {
+	    sql.connect(config).then(pool => {
+		const query=`
+select avg(t.average) as avg from 
+(select
+case penalty when 'plustwo' then (2000+solve_time) else solve_time end as average
+ from solve where not penalty='dnf' and id_user=@user) t;`;
+		return pool.request()
+		    .input('user',sql.Int, id_user)
+		    .query(query);
+	    }).then(result => {
+		console.log(result);
+		resolve(result);
+	    }).catch(err => {
+		console.log('Query error: '+err);
+		reject(err);
+	    });
+	});
+    }
+    
+
+
+    
 }
 
 

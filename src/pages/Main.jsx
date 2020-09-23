@@ -32,6 +32,7 @@ import Session from '../Session.js';
 import Timer from '../components/Timer';
 import Welcome from '../components/Welcome';
 import Sessions from '../components/Session';
+import Stats from '../components/Stats';
 
 const drawerWidth = 240;
 
@@ -151,10 +152,7 @@ export default function Main({rec_user, logout})
             return <Sessions user={rec_user} startTimer={() =>setStatus(statuses[1])} session={setTimerSession}/>;
             case 'stats':
             return (
-                <div>
-                  <label>heck</label>
-                  <input></input>
-                </div>
+                <Stats user={rec_user} />
             );
             default:
             return <Welcome name={rec_user.first_name === null ? rec_user.username : rec_user.first_name}/>;

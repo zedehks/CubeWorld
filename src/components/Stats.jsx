@@ -43,12 +43,13 @@ export default function Stats({user})
             }
         }).then((response) => {
             let data = response.data.avg;
-            console.log(data);
+            //console.log(data);
             setAvg(data);
         })
             .catch(error => {
-                console.log(error); 
+                //console.log(error); 
             });
+        //console.log(avg);
     }
     function getBest()
     {
@@ -58,12 +59,13 @@ export default function Stats({user})
             }
         }).then((response) => {
             let data = response.data.solve_time;
-            console.log(data);
+            //console.log(data);
             setBest(data);
         })
             .catch(error => {
-                console.log(error); 
+                //console.log(error); 
             });
+        console.log(best);
     }
     function getWorst()
     {
@@ -73,22 +75,28 @@ export default function Stats({user})
             }
         }).then((response) => {
             let data = response.data.solve_time;
-            console.log(data);
+            //console.log(data);
             setWorst(data);
         })
             .catch(error => {
-                console.log(error); 
+                //console.log(error); 
             });
+        console.log(worst);
     }
     
-    const Avg = () =>
-    {
+    const Avg = () =>{
+        let returnval = 'N.A';
+        try{
+            returnval = ms(avg, {colonNotation:true,secondsDecimalDigits: 2});
+        }catch (error)
+        {
+            returnval= 'N.A.';
+        }
         return(
             <Paper>
               Global average time:
-              { avg !== 0 ?
-                ms(avg, {colonNotation:true,secondsDecimalDigits: 2})
-                : 'N.A.'
+              {
+                  returnval
               }
             </Paper>
         );
@@ -96,29 +104,41 @@ export default function Stats({user})
 
     const Best = () =>
     {
+        let returnval = 'N.A';
+        try{
+            returnval = ms(best, {colonNotation:true,secondsDecimalDigits: 2});
+        }catch (error)
+        {
+            returnval= 'N.A.';
+        }
         return(
             <Paper>
-              Best time: {
-              best !== 0? 
-                  ms(best, {colonNotation:true,secondsDecimalDigits: 2})
-                      : 'N.A.'
+              Best time:
+              {
+                  returnval
               }
             </Paper>
         );
 
     };
 
-    function Worst()
+    const  Worst = () =>
     {
+        let returnval = 'N.A';
+        try{
+            returnval = ms(worst, {colonNotation:true,secondsDecimalDigits: 2});
+        }catch (error)
+        {
+            returnval= 'N.A.';
+        }
         return(
             <Paper>
-              Worst time: {
-                  worst !==0 ?
-                  ms(worst, {colonNotation:true,secondsDecimalDigits: 2})
-                      : 'N.A.'
+              Worst time:
+              {
+                  returnval
               }
             </Paper>
-        );        
+        );
     };
 
     
